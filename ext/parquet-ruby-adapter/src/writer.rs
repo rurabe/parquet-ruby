@@ -21,16 +21,10 @@ pub fn create_writer(
     let compression_setting = parse_compression(compression)?;
     let mut builder = WriterProperties::builder();
     builder = builder.set_compression(compression_setting);
-    
-    // Default max row group size in parquet-rs is 1048576 (1M rows)
-    // We'll use this to cap NDV values since bloom filters are per row group
+
     const DEFAULT_MAX_ROW_GROUP_SIZE: u64 = 1048576;
 
     if let Some(configs) = bloom_filters {
-        // Enable bloom filters globally when any config provided
-        builder = builder.set_bloom_filter_enabled(true);
-
-        // Enable and configure per-column bloom filter settings
         for cfg in configs {
             let col_path = ColumnPath::new(cfg.path.clone());
             builder = builder.set_column_bloom_filter_enabled(col_path.clone(), true);
